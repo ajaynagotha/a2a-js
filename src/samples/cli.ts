@@ -19,7 +19,7 @@ import {
   Part // Added for explicit Part typing
 } from "../index.js";
 
-import {A2AClient} from "../client/index.js";
+import { A2AClient } from "../client/index.js";
 
 // --- ANSI Colors ---
 const colors = {
