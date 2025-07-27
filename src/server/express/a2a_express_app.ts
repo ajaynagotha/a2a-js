@@ -106,4 +106,4 @@ export class A2AExpressApp {
         // The separate /stream endpoint is no longer needed.
         return app;
     }
-} 
+}
