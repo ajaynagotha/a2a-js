@@ -33,7 +33,9 @@
   },
   "typesVersions": {
     "*": {
-      "server/*": ["dist/server/*"]
+      "server/*": [
+        "dist/server/*"
+      ]
     }
   },
   "files": [

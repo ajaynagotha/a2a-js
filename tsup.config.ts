@@ -2,8 +2,8 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: [
-    "src/index.ts", 
-    "src/server/index.ts", 
+    "src/index.ts",
+    "src/server/index.ts",
     "src/client/index.ts",
     "src/server/request_handler/a2a_request_handler.ts",
     "src/server/request_handler/default_request_handler.ts",
@@ -17,7 +17,7 @@ export default defineConfig({
     "src/server/error.ts",
     "src/server/result_manager.ts",
     "src/server/store.ts",
-    "src/server/utils.ts"
+    "src/server/utils.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,
