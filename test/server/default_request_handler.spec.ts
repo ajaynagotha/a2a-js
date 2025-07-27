@@ -572,4 +572,86 @@ describe('DefaultRequestHandler as A2ARequestHandler', () => {
         const queue = new ExecutionEventQueue(fakeBus);
         expect(queue).to.be.instanceOf(ExecutionEventQueue);
     });
+
+    it('should use contextId from incomingMessage if present (contextId assignment logic)', async () => {
+        const params: MessageSendParams = {
+            message: {
+                messageId: 'msg-ctx',
+                role: 'user',
+                parts: [{ kind: 'text', text: 'Hello' }],
+                kind: 'message',
+                contextId: 'incoming-ctx-id',
+            },
+        };
+        let capturedContextId: string | undefined;
+        (mockAgentExecutor.execute as SinonStub).callsFake(async (ctx, bus) => {
+            capturedContextId = ctx.contextId;
+            bus.publish({
+                id: ctx.taskId,
+                contextId: ctx.contextId,
+                status: { state: "submitted" },
+                kind: 'task'
+            });
+            bus && bus.finished && bus.finished();
+        });
+        await handler.sendMessage(params);
+        expect(capturedContextId).to.equal('incoming-ctx-id');
+    });
+
+    it('should use contextId from task if not present in incomingMessage (contextId assignment logic)', async () => {
+        const taskId = 'task-ctx-id';
+        const taskContextId = 'task-context-id';
+        await mockTaskStore.save({
+            id: taskId,
+            contextId: taskContextId,
+            status: { state: 'working' },
+            kind: 'task',
+        });
+        const params: MessageSendParams = {
+            message: {
+                messageId: 'msg-ctx2',
+                role: 'user',
+                parts: [{ kind: 'text', text: 'Hi' }],
+                kind: 'message',
+                taskId,
+            },
+        };
+        let capturedContextId: string | undefined;
+        (mockAgentExecutor.execute as SinonStub).callsFake(async (ctx, bus) => {
+            capturedContextId = ctx.contextId;
+            bus.publish({
+                id: ctx.taskId,
+                contextId: ctx.contextId,
+                status: { state: "submitted" },
+                kind: 'task'
+            });
+            bus && bus.finished && bus.finished();
+        });
+        await handler.sendMessage(params);
+        expect(capturedContextId).to.equal(taskContextId);
+    });
+
+    it('should generate a new contextId if not present in message or task (contextId assignment logic)', async () => {
+        const params: MessageSendParams = {
+            message: {
+                messageId: 'msg-ctx3',
+                role: 'user',
+                parts: [{ kind: 'text', text: 'Hey' }],
+                kind: 'message',
+            },
+        };
+        let capturedContextId: string | undefined;
+        (mockAgentExecutor.execute as SinonStub).callsFake(async (ctx, bus) => {
+            capturedContextId = ctx.contextId;
+            bus.publish({
+                id: ctx.taskId,
+                contextId: ctx.contextId,
+                status: { state: "submitted" },
+                kind: 'task'
+            });
+            bus && bus.finished && bus.finished();
+        });
+        await handler.sendMessage(params);
+        expect(capturedContextId).to.be.a('string').and.not.empty;
+    });
 });
