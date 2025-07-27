@@ -5,7 +5,7 @@ export default defineConfig({
   entry: [
     "src/index.ts",
     "src/client/index.ts",
-...globSync("src/server/**/*.ts"),
+    ...globSync("src/server/**/*.ts"),
   ],
   format: ["esm", "cjs"],
   dts: true,
