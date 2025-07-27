@@ -1,6 +1,5 @@
 import { defineConfig } from "tsup";
-import pkg from "glob";
-const { glob } = pkg;
+import { globSync } from "glob";
 
 export default defineConfig({
   entry: [
