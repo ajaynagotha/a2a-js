@@ -27,32 +27,8 @@ You can also find JavaScript samples [here](https://github.com/google-a2a/a2a-sa
 
 This SDK now supports subpath exports, allowing you to import specific modules without forcing a dependency on Express. This is particularly useful if you want to implement your own transport layer or use a different web framework.
 
-### Available Subpath Exports
-
-```typescript
-// Import specific request handlers
-import { A2ARequestHandler } from "@a2a-js/sdk/server/request_handler/a2a_request_handler.js";
-import { DefaultRequestHandler } from "@a2a-js/sdk/server/request_handler/default_request_handler.js";
-
-// Import transport handlers
-import { JsonRpcTransportHandler } from "@a2a-js/sdk/server/transports/jsonrpc_transport_handler.js";
-
-// Import agent execution utilities
-import { AgentExecutor } from "@a2a-js/sdk/server/agent_execution/agent_executor.js";
-import { RequestContext } from "@a2a-js/sdk/server/agent_execution/request_context.js";
-
-// Import event system
-import { ExecutionEventBus } from "@a2a-js/sdk/server/events/execution_event_bus.js";
-import { ExecutionEventBusManager } from "@a2a-js/sdk/server/events/execution_event_bus_manager.js";
-import { ExecutionEventQueue } from "@a2a-js/sdk/server/events/execution_event_queue.js";
-
-// Import other utilities
-import { A2AError } from "@a2a-js/sdk/server/error.js";
-import { ResultManager } from "@a2a-js/sdk/server/result_manager.js";
 import { TaskStore, InMemoryTaskStore } from "@a2a-js/sdk/server/store.js";
-
-// Express app (requires Express dependency)
-import { A2AExpressApp } from "@a2a-js/sdk/server/a2a_express_app.js";
+import * as utils from "@a2a-js/sdk/server/utils.js";
 ```
 
 This allows for more flexible usage patterns and avoids pulling in Express as a dependency when you're implementing custom transport layers.
