@@ -267,7 +267,7 @@ There's a `A2AClient` class, which provides methods for interacting with an A2A 
 - **A2A Methods:** Implements standard A2A methods like `sendMessage`, `sendMessageStream`, `getTask`, `cancelTask`, `setTaskPushNotificationConfig`, `getTaskPushNotificationConfig`, and `resubscribeTask`.
 - **Error Handling:** Provides basic error handling for network issues and JSON-RPC errors.
 - **Streaming Support:** Manages Server-Sent Events (SSE) for real-time task updates (`sendMessageStream`, `resubscribeTask`).
-- **Timeout Support:** Configurable timeout for `sendMessage` and `sendMessageStream` methods.
+- **Timeout Support:** Configurable timeout for all client methods.
 - **Extensibility:** Allows providing a custom `fetch` implementation for different environments (e.g., Node.js).
 
 ### Basic Usage
