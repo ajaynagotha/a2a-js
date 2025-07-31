@@ -163,15 +163,15 @@ export class A2AClient {
     const timeout = (params as any)?.configuration?.timeout || (params as any)?.timeout;
 
     // Add timeout if specified
+    let httpResponse: Response;
     if (timeout) {
-      const httpResponse = await fetchWithTimeout(endpoint, {
+      httpResponse = await fetchWithTimeout(endpoint, {
         ...fetchOptions,
         timeout: timeout,
       });
-      return this._handleHttpResponse(httpResponse, method, rpcRequest, requestId);
+    } else {
+      httpResponse = await fetch(endpoint, fetchOptions);
     }
-
-    const httpResponse = await fetch(endpoint, fetchOptions);
     return this._handleHttpResponse(httpResponse, method, rpcRequest, requestId);
   }
 
