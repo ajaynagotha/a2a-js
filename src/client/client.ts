@@ -379,7 +379,7 @@ export class A2AClient {
     };
 
     let response: Response;
-    const timeout = (params as any)?.timeout;
+    const timeout = params.timeout;
 
     if (timeout) {
       response = await fetchWithTimeout(endpoint, {
