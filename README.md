@@ -15,7 +15,7 @@
 
 ## Installation
 
-You can install the A2A SDK using either `npm`.
+You can install the A2A SDK using `npm`:
 
 ```bash
 npm install @a2a-js/sdk
@@ -23,13 +23,15 @@ npm install @a2a-js/sdk
 
 ### For Server Usage
 
-If you plan to use the A2A server functionality (A2AExpressApp), you'll also need to install Express as it's a peer dependency:
+If you plan to use the A2A server functionality (`A2AExpressApp`), you'll also need to install Express as it's a peer dependency:
 
 ```bash
 npm install express
 ```
 
 You can also find JavaScript samples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/js).
+
+---
 
 ## A2A Server
 
@@ -234,7 +236,7 @@ const taskStore: TaskStore = new InMemoryTaskStore();
 const agentExecutor: AgentExecutor = new MyAgentExecutor();
 
 const requestHandler = new DefaultRequestHandler(
-  coderAgentCard,
+  movieAgentCard,
   taskStore,
   agentExecutor
 );
@@ -242,7 +244,7 @@ const requestHandler = new DefaultRequestHandler(
 const appBuilder = new A2AExpressApp(requestHandler);
 const expressApp = appBuilder.setupRoutes(express(), "");
 
-const PORT = process.env.CODER_AGENT_PORT || 41242; // Different port for coder agent
+const PORT = process.env.MOVIE_AGENT_PORT || 41241;
 expressApp.listen(PORT, () => {
   console.log(
     `[MyAgent] Server using new framework started on http://localhost:${PORT}`
@@ -254,34 +256,99 @@ expressApp.listen(PORT, () => {
 });
 ```
 
-### Agent Executor
-
-Developers are expected to implement this interface and provide two methods: `execute` and `cancelTask`.
-
-#### `execute`
-
-- This method is provided with a `RequestContext` and an `EventBus` to publish execution events.
-- Executor can either respond by publishing a Message or Task.
-- For a task, check if there's an existing task in `RequestContext`. If not, publish an initial Task event using `taskId` & `contextId` from `RequestContext`.
-- Executor can subsequently publish `TaskStatusUpdateEvent` or `TaskArtifactUpdateEvent`.
-- Executor should indicate which is the `final` event and also call `finished()` method of event bus.
-- Executor should also check if an ongoing task has been cancelled. If yes, cancel the execution and emit an `TaskStatusUpdateEvent` with cancelled state.
-
-#### `cancelTask`
-
-Executors should implement cancellation mechanism for an ongoing task.
+---
 
 ## A2A Client
 
-There's a `A2AClient` class, which provides methods for interacting with an A2A server over HTTP using JSON-RPC.
+The `A2AClient` class provides methods for interacting with an A2A server over HTTP using JSON-RPC.
 
-### Key Features:
+### Key Features
 
 - **JSON-RPC Communication:** Handles sending requests and receiving responses (both standard and streaming via Server-Sent Events) according to the JSON-RPC 2.0 specification.
 - **A2A Methods:** Implements standard A2A methods like `sendMessage`, `sendMessageStream`, `getTask`, `cancelTask`, `setTaskPushNotificationConfig`, `getTaskPushNotificationConfig`, and `resubscribeTask`.
 - **Error Handling:** Provides basic error handling for network issues and JSON-RPC errors.
 - **Streaming Support:** Manages Server-Sent Events (SSE) for real-time task updates (`sendMessageStream`, `resubscribeTask`).
-- **Extensibility:** Allows providing a custom `fetch` implementation for different environments (e.g., Node.js).
+- **Extensibility:** Allows providing a custom fetch implementation for different environments (e.g., Node.js), authentication, and custom headers.
+
+### Custom Fetch, Authentication, and Custom Headers
+
+The A2AClient supports flexible HTTP request logic via the `fetchImpl` option, enabling:
+
+- Custom fetch implementations (for Node.js, logging, tracing, etc.)
+- Static or dynamic authentication headers (e.g. `Authorization`)
+- Robust token management and authentication retry flows
+
+#### Custom Fetch Example
+
+You can inject global headers and custom request logic by supplying a function to the `fetchImpl` option:
+
+```typescript
+const myCustomFetch = (url, options = {}) => {
+  options.headers = {
+    ...(options.headers || {}),
+    "X-Custom-Header": "my-value",
+    // "Authorization": "Bearer my-token", // for static tokens
+  };
+  return fetch(url, options);
+};
+
+const client = new A2AClient("https://agent.example.com", {
+  fetchImpl: myCustomFetch,
+});
+```
+
+#### Authentication Support with AuthenticationHandler
+
+For dynamic authentication (e.g. handling 401/403, rotating tokens, etc.), implement an `AuthenticationHandler` and wrap your fetch with `createAuthenticatingFetchWithRetry`:
+
+```typescript
+import { createAuthenticatingFetchWithRetry } from "@a2a-js/sdk/client/auth-handler";
+
+const authHandler = {
+  // Always returns your current auth headers
+  headers: async () => ({ Authorization: "Bearer <your_token>" }),
+
+  // Handles 401/403 responses and returns new headers if needed
+  shouldRetryWithHeaders: async (req, res) => {
+    if (res.status === 401) {
+      // Optionally refresh or update token here
+      return { Authorization: "Bearer <new_token>" };
+    }
+    return undefined;
+  },
+
+  // Optional: persist headers after a successful retry
+  onSuccessfulRetry: async (headers) => {
+    // Save new token or headers if needed
+  },
+};
+
+const authenticatedFetch = createAuthenticatingFetchWithRetry(fetch, authHandler);
+
+const client = new A2AClient("https://agent.example.com", {
+  fetchImpl: authenticatedFetch,
+});
+```
+
+#### Custom Headers Example
+
+For static `Authorization` or other custom headers on every request:
+
+```typescript
+const staticFetch = (url, options = {}) => {
+  options.headers = {
+    ...(options.headers || {}),
+    Authorization: "Bearer <your_token>"
+  };
+  return fetch(url, options);
+};
+
+const client = new A2AClient("http://localhost:41241", {
+  fetchImpl: staticFetch,
+});
+```
+
+---
 
 ### Basic Usage
 
@@ -443,6 +510,8 @@ async function streamTask() {
 
 streamTask();
 ```
+
+---
 
 ## License
 
