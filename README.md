@@ -283,6 +283,64 @@ There's a `A2AClient` class, which provides methods for interacting with an A2A 
 - **Streaming Support:** Manages Server-Sent Events (SSE) for real-time task updates (`sendMessageStream`, `resubscribeTask`).
 - **Extensibility:** Allows providing a custom `fetch` implementation for different environments (e.g., Node.js).
 
+---
+
+### Custom Fetch and Custom Headers
+
+You can provide a custom fetch implementation to `A2AClient` for advanced use cases such as custom headers, authentication, or running in environments like Node.js. Use the `fetchImpl` option in the constructor.
+
+#### Custom Fetch Example
+
+```typescript
+const myCustomFetch = (url, options = {}) => {
+  options.headers = {
+    ...(options.headers || {}),
+    "X-Custom-Header": "my-value",
+    // "Authorization": "Bearer my-token", // for static tokens
+  };
+  return fetch(url, options);
+};
+
+const client = new A2AClient("https://agent.example.com", {
+  fetchImpl: myCustomFetch,
+});
+```
+
+#### Authentication Handler Pattern
+
+For advanced authentication scenarios (such as handling 401/403, dynamic tokens, etc), use the `AuthenticationHandler` interface with the `createAuthenticatingFetchWithRetry` helper.
+
+```typescript
+import { createAuthenticatingFetchWithRetry } from "@a2a-js/sdk/client/auth-handler";
+
+const authHandler = {
+  // Always returns your current auth headers
+  headers: async () => ({ Authorization: "Bearer <your_token>" }),
+
+  // Handles 401/403 responses and returns new headers if needed
+  shouldRetryWithHeaders: async (req, res) => {
+    if (res.status === 401) {
+      // Optionally refresh or update token here
+      return { Authorization: "Bearer <new_token>" };
+    }
+    return undefined;
+  },
+
+  // Optional: persist headers after a successful retry
+  onSuccessfulRetry: async (headers) => {
+    // Save new token or headers if needed
+  },
+};
+
+const authenticatedFetch = createAuthenticatingFetchWithRetry(fetch, authHandler);
+
+const client = new A2AClient("https://agent.example.com", {
+  fetchImpl: authenticatedFetch,
+});
+```
+
+---
+
 ### Basic Usage
 
 ```typescript
