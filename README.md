@@ -349,12 +349,13 @@ const client = new A2AClient("https://agent.example.com", {
 For static `Authorization` or other custom headers on every request:
 
 ```typescript
-const staticFetch = (url, options = {}) => {
-  options.headers = {
-    ...(options.headers || {}),
-    Authorization: "Bearer <your_token>"
-  };
-  return fetch(url, options);
+const staticFetch = (url: RequestInfo | URL, options?: RequestInit): Promise<Response> => {
+  const headers = new Headers(options?.headers);
+  headers.set("Authorization", "Bearer <your_token>");
+  return fetch(url, {
+    ...options,
+    headers,
+  });
 };
 
 const client = new A2AClient("http://localhost:41241", {
