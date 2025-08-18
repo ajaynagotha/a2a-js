@@ -281,15 +281,19 @@ There's a `A2AClient` class, which provides methods for interacting with an A2A 
 - **A2A Methods:** Implements standard A2A methods like `sendMessage`, `sendMessageStream`, `getTask`, `cancelTask`, `setTaskPushNotificationConfig`, `getTaskPushNotificationConfig`, and `resubscribeTask`.
 - **Error Handling:** Provides basic error handling for network issues and JSON-RPC errors.
 - **Streaming Support:** Manages Server-Sent Events (SSE) for real-time task updates (`sendMessageStream`, `resubscribeTask`).
-- **Extensibility:** Allows providing a custom `fetch` implementation for different environments (e.g., Node.js).
+- **Extensibility:** Allows providing a custom fetch implementation for different environments (e.g., Node.js), authentication, and custom headers.
 
----
+### Custom Fetch, Authentication, and Custom Headers
 
-### Custom Fetch and Custom Headers
+The A2AClient supports flexible HTTP request logic via the `fetchImpl` option, enabling:
 
-You can provide a custom fetch implementation to `A2AClient` for advanced use cases such as custom headers, authentication, or running in environments like Node.js. Use the `fetchImpl` option in the constructor.
+- Custom fetch implementations (for Node.js, logging, tracing, etc.)
+- Static or dynamic authentication headers (e.g. `Authorization`)
+- Robust token management and authentication retry flows
 
 #### Custom Fetch Example
+
+You can inject global headers and custom request logic by supplying a function to the `fetchImpl` option:
 
 ```typescript
 const myCustomFetch = (url, options = {}) => {
@@ -306,9 +310,9 @@ const client = new A2AClient("https://agent.example.com", {
 });
 ```
 
-#### Authentication Handler Pattern
+#### Authentication Support with AuthenticationHandler
 
-For advanced authentication scenarios (such as handling 401/403, dynamic tokens, etc), use the `AuthenticationHandler` interface with the `createAuthenticatingFetchWithRetry` helper.
+For dynamic authentication (e.g. handling 401/403, rotating tokens, etc.), implement an `AuthenticationHandler` and wrap your fetch with `createAuthenticatingFetchWithRetry`:
 
 ```typescript
 import { createAuthenticatingFetchWithRetry } from "@a2a-js/sdk/client/auth-handler";
@@ -336,6 +340,24 @@ const authenticatedFetch = createAuthenticatingFetchWithRetry(fetch, authHandler
 
 const client = new A2AClient("https://agent.example.com", {
   fetchImpl: authenticatedFetch,
+});
+```
+
+#### Custom Headers Example
+
+For static `Authorization` or other custom headers on every request:
+
+```typescript
+const staticFetch = (url, options = {}) => {
+  options.headers = {
+    ...(options.headers || {}),
+    Authorization: "Bearer <your_token>"
+  };
+  return fetch(url, options);
+};
+
+const client = new A2AClient("http://localhost:41241", {
+  fetchImpl: staticFetch,
 });
 ```
 
