@@ -296,13 +296,14 @@ The A2AClient supports flexible HTTP request logic via the `fetchImpl` option, e
 You can inject global headers and custom request logic by supplying a function to the `fetchImpl` option:
 
 ```typescript
-const myCustomFetch = (url, options = {}) => {
-  options.headers = {
-    ...(options.headers || {}),
-    "X-Custom-Header": "my-value",
-    // "Authorization": "Bearer my-token", // for static tokens
-  };
-  return fetch(url, options);
+const myCustomFetch = (url: RequestInfo | URL, options?: RequestInit): Promise<Response> => {
+  const headers = new Headers(options?.headers);
+  headers.set("X-Custom-Header", "my-value");
+  // headers.set("Authorization", "Bearer my-token"); // for static tokens
+  return fetch(url, {
+    ...options,
+    headers,
+  });
 };
 
 const client = new A2AClient("https://agent.example.com", {
