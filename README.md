@@ -318,12 +318,12 @@ For dynamic authentication (e.g. handling 401/403, rotating tokens, etc.), imple
 ```typescript
 import { createAuthenticatingFetchWithRetry } from "@a2a-js/sdk/client/auth-handler";
 
-const authHandler = {
+const authHandler: AuthenticationHandler = {
   // Always returns your current auth headers
-  headers: async () => ({ Authorization: "Bearer <your_token>" }),
+  headers: async (): Promise<HttpHeaders> => ({ Authorization: "Bearer <your_token>" }),
 
   // Handles 401/403 responses and returns new headers if needed
-  shouldRetryWithHeaders: async (req, res) => {
+  shouldRetryWithHeaders: async (req: RequestInit, res: Response): Promise<HttpHeaders | undefined> => {
     if (res.status === 401) {
       // Optionally refresh or update token here
       return { Authorization: "Bearer <new_token>" };
@@ -332,7 +332,7 @@ const authHandler = {
   },
 
   // Optional: persist headers after a successful retry
-  onSuccessfulRetry: async (headers) => {
+  onSuccessfulRetry: async (headers: HttpHeaders): Promise<void> => {
     // Save new token or headers if needed
   },
 };
