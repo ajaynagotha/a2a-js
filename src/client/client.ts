@@ -77,7 +77,7 @@ export class A2AClient {
     if (typeof window !== 'undefined' && typeof window.fetch === 'function') {
       return window.fetch.bind(window)(...args);
     }
-    if (typeof fetch !== 'undefined') {
+    if (typeof fetch === 'function') {
       return fetch(...args);
     }
     throw new Error(
