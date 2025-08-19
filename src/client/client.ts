@@ -387,7 +387,7 @@ export class A2AClient {
       body: JSON.stringify(rpcRequest),
     });
 
- if (!response.ok) {
+  if (!response.ok) {
       let errorBody = "";
       try {
         errorBody = await response.text();
