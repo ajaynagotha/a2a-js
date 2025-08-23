@@ -74,16 +74,14 @@ export class A2AClient {
     if (this.customFetchImpl) {
       return this.customFetchImpl(...args);
     }
-    if (typeof window !== 'undefined' && typeof window.fetch === 'function') {
-      return window.fetch.bind(window)(...args);
-    }
+    // If no custom fetch implementation is provided, use the global fetch.
     if (typeof fetch === 'function') {
       return fetch(...args);
     }
     throw new Error(
       'A `fetch` implementation was not provided and is not available in the global scope. ' +
       'Please provide a `fetchImpl` in the A2AClientOptions. ' +
-      'For Node.js environments, you can use a library like `node-fetch`.'
+      'For earlier Node.js versions (pre-v18), you can use a library like `node-fetch`.'
     );
   }
 
