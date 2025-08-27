@@ -59,6 +59,7 @@ describe('A2AClient Basic Tests', () => {
         'Please provide a `fetchImpl` in the A2AClientOptions. ' +
         'For earlier Node.js versions (pre-v18), you can use a library like `node-fetch`.';
 
+      let caughtError: Error | undefined;
       try {
         // Arrange: Ensure no global fetch is defined for this test
         // @ts-ignore
@@ -71,12 +72,13 @@ describe('A2AClient Basic Tests', () => {
         await clientWithoutFetch.getAgentCard();
         expect.fail('Expected an error to be thrown but it was not.');
       } catch (error) {
-        expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.equal(expectedErrorMsg);
+        caughtError = error as Error;
       } finally {
         // Cleanup to not affect other tests
         global.fetch = originalFetch;
       }
+      expect(caughtError).to.be.instanceOf(Error);
+      expect(caughtError?.message).to.equal(expectedErrorMsg);
     });
 
     it('should fetch agent card during initialization', async () => {
